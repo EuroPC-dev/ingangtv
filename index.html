@@ -1,1 +1,139 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kiosk - WK Resultaten Online</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.cdnfonts.com/css/garet" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 
+  <style>
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      width: 100%; 
+      height: 100%; 
+      overflow: hidden; 
+      background-color: #AEC6CF; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+    }
+    .kiosk-container { 
+      position: relative; 
+      aspect-ratio: 9 / 16; 
+      width: 100%; 
+      height: 100%; 
+      max-height: 100vh; 
+      max-width: 100vw; 
+      background-color: #AEC6CF; 
+      box-sizing: border-box; 
+      overflow: hidden; 
+    }
+    .kiosk-video { 
+      position: absolute; 
+      left: 0; 
+      width: 100%; 
+      height: auto; 
+      max-height: 33%; 
+      object-fit: contain; 
+      display: block; 
+      border-top: 4px solid white; 
+      border-bottom: 4px solid white; 
+      box-sizing: border-box; 
+    }
+
+    #info-bar { 
+      position: absolute; 
+      top: 38%; 
+      height: 21%; 
+      left: 0; 
+      width: 100%; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      align-items: center; 
+      color: white; 
+      text-shadow: 2px 2px 16px rgba(0, 0, 0, 0.5); 
+      z-index: 10; 
+      box-sizing: border-box; 
+    }
+    #video-onder { top: 59%; }
+    .live-klok { font-family: 'Garet', sans-serif; font-weight: 850; font-size: clamp(55px, 15cqw, 210px); line-height: 0.82; letter-spacing: -2px; }
+    .live-datum { font-family: 'Inter', sans-serif; font-size: clamp(20px, 5cqw, 70px); line-height: 1; font-weight: 900; margin-top: 5px; }
+    
+    #news-bar { 
+      position: absolute; 
+      bottom: 4%; 
+      left: 5%; 
+      width: 90%; 
+      height: clamp(40px, 6.5cqw, 90px); 
+      background-color: #333333; 
+      border-radius: 10px; 
+      display: flex; 
+      align-items: center; 
+      padding: 0 15px; 
+      box-sizing: border-box; 
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); 
+      z-index: 10; 
+    }
+    #news-logo { height: 55%; width: auto; margin-right: 12px; display: block; object-fit: contain; }
+    #news-text-container { flex-grow: 1; overflow: hidden; display: flex; align-items: center; justify-content: flex-start; height: 100%; }
+    #news-ticker { font-family: 'Inter', sans-serif; color: white; font-weight: 700; text-align: left; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; width: 100%; font-size: clamp(11px, 2.1cqw, 22px); line-height: 1.15; }
+  </style>
+</head>
+<body>
+
+  <div class="kiosk-container">
+    <div id="info-bar">
+      <div class="live-klok" id="live-klok">--:--</div>
+      <div class="live-datum" id="live-datum">--- -- ---</div>
+    </div>
+
+    <video id="video-onder" class="kiosk-video" autoplay muted loop playsinline>
+      <source src="video1.mp4" type="video/mp4" />
+    </video>
+
+    <div id="news-bar">
+      <img id="news-logo" src="nu.png" alt="NU.nl Logo" />
+      <div id="news-text-container"><div id="news-ticker">Nieuws wordt geladen...</div></div>
+    </div>
+  </div>
+
+  <script>
+    // --- NIEUWS FEED LOGICA ---
+    async function haalNieuwsOp() {
+        const ticker = document.getElementById('news-ticker');
+        try {
+            const response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://www.nu.nl/rss/Sport");
+            const data = await response.json();
+            
+            if (data.items && data.items.length > 0) {
+                ticker.textContent = data.items[0].title;
+            } else {
+                ticker.textContent = "Geen actueel sportnieuws beschikbaar.";
+            }
+        } catch (e) {
+            ticker.textContent = "Nieuws tijdelijk niet beschikbaar.";
+        }
+    }
+
+    // Initialisaties
+    haalNieuwsOp();
+    setInterval(haalNieuwsOp, 60000);  // Elke 1 min nieuws verversen
+
+    function updateKlokEnDatum() {
+      const nu = new Date();
+      document.getElementById('live-klok').textContent = `${String(nu.getHours()).padStart(2, '0')}:${String(nu.getMinutes()).padStart(2, '0')}`;
+      const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+      const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+      document.getElementById('live-datum').textContent = `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]}`;
+    }
+    updateKlokEnDatum();
+    setInterval(updateKlokEnDatum, 1000);
+  </script>
+</body>
+</html>
