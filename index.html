@@ -83,6 +83,16 @@
       transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
     }
 
+    /* Onzichtbare videospeler CSS */
+    .hidden-video {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      border: none;
+    }
+
     #info-bar { 
       position: absolute; 
       top: 23%; 
@@ -173,12 +183,23 @@
       <div class="live-datum" id="live-datum">--- -- ---</div>
     </div>
 
+    <!-- Zichtbare Videospeler -->
     <iframe 
       id="video-onder" 
       class="kiosk-video" 
       src="https://www.youtube-nocookie.com/embed/videoseries?list=PLEuSxsuyW1fM&autoplay=1&mute=1&loop=1&controls=0&rel=0" 
       allow="autoplay; encrypted-media" 
       allowfullscreen>
+    </iframe>
+
+    <!-- Onzichtbare Extra Videospeler -->
+    <iframe 
+      id="video-verborgen" 
+      class="hidden-video" 
+      src="https://www.youtube-nocookie.com/embed/videoseries?list=PLeZLvM17wCjE&autoplay=1&mute=1&loop=1&controls=0&rel=0" 
+      allow="autoplay; encrypted-media" 
+      tabindex="-1"
+      aria-hidden="true">
     </iframe>
 
     <div id="news-bar">
