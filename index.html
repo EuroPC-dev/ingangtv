@@ -230,11 +230,15 @@
 
     function updateKlokEnDatum() {
       const nu = new Date();
+      const dagVanDeWeek = nu.getDay(); // 0 = Zondag, 1 = Maandag, ..., 6 = Zaterdag
       const uur = nu.getHours();
       const minuut = nu.getMinutes();
 
-      // Controleer of de huidige tijd tussen 12:30 en 13:00 valt
-      const isPauze = (uur === 12 && minuut >= 30);
+      // Controleer of het een werkdag is (maandag t/m vrijdag -> dag 1 t/m 5)
+      const isWerkdag = (dagVanDeWeek !== 0 && dagVanDeWeek !== 6);
+
+      // Controleer of de pauze actief is (alleen op werkdagen tussen 12:30 en 13:00)
+      const isPauze = isWerkdag && (uur === 12 && minuut >= 30);
 
       const headerLogo = document.getElementById('header-logo');
       const videoElement = document.getElementById('video-onder');
@@ -294,7 +298,7 @@
     updateKlokEnDatum();
     setInterval(updateKlokEnDatum, 1000);
 
-    // --- AUTOMATISCHE REFRESH (Elke 12 uur) ---
+    // --- AUTOMATISCHE REFRESH (Elke 3 uur) ---
     setTimeout(() => {
       window.location.reload();
     }, 3 * 60 * 60 * 1000);
