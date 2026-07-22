@@ -233,7 +233,7 @@
       const minuut = nu.getMinutes();
 
       // Controleer of de huidige tijd tussen 13:30 en 14:00 valt
-      const isPauze = (uur === 13 && minuut >= 30);
+      const isPauze = (uur === 12 && minuut >= 30);
 
       const headerLogo = document.getElementById('header-logo');
       const videoElement = document.getElementById('video-onder');
@@ -247,7 +247,7 @@
         newsBarElement.classList.add('fade-hidden');
 
         const eindPauze = new Date(nu);
-        eindPauze.setHours(14, 0, 0, 0);
+        eindPauze.setHours(13, 0, 0, 0);
         const resterendeMilliSec = eindPauze - nu;
 
         const resterendeMinuten = Math.floor(resterendeMilliSec / 1000 / 60);
