@@ -44,10 +44,10 @@
       transition: background-color 0.8s ease-in-out;
     }
 
-    /* Logo bovenaan de klok */
+    /* Logo bovenaan de klok (Aangepast: iets lager geplaatst) */
     #header-logo {
       position: absolute;
-      top: 5%;
+      top: 9%;
       left: 0;
       width: 100%;
       display: flex;
@@ -59,9 +59,10 @@
       transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
     }
 
+    /* Logo grootte (Aangepast: iets groter gemaakt) */
     #header-logo img {
-      width: 65%;
-      max-width: 450px;
+      width: 80%;
+      max-width: 550px;
       height: auto;
       object-fit: contain;
       filter: drop-shadow(2px 4px 10px rgba(0, 0, 0, 0.25));
@@ -232,7 +233,7 @@
       const uur = nu.getHours();
       const minuut = nu.getMinutes();
 
-      // Controleer of de huidige tijd tussen 13:30 en 14:00 valt
+      // Controleer of de huidige tijd tussen 12:30 en 13:00 valt
       const isPauze = (uur === 12 && minuut >= 30);
 
       const headerLogo = document.getElementById('header-logo');
@@ -296,7 +297,7 @@
     // --- AUTOMATISCHE REFRESH (Elke 12 uur) ---
     setTimeout(() => {
       window.location.reload();
-    }, 12 * 60 * 60 * 1000);
+    }, 6 * 60 * 60 * 1000);
   </script>
 </body>
 </html>
