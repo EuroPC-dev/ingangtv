@@ -23,6 +23,7 @@
       align-items: center; 
     }
     .kiosk-container { 
+      container-type: inline-size;
       position: relative; 
       aspect-ratio: 9 / 16; 
       width: 100%; 
@@ -80,7 +81,26 @@
     }
     #news-logo { height: 55%; width: auto; margin-right: 12px; display: block; object-fit: contain; }
     #news-text-container { flex-grow: 1; overflow: hidden; display: flex; align-items: center; justify-content: flex-start; height: 100%; }
-    #news-ticker { font-family: 'Inter', sans-serif; color: white; font-weight: 700; text-align: left; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; width: 100%; font-size: clamp(11px, 2.1cqw, 22px); line-height: 1.15; }
+    
+    #news-ticker { 
+      font-family: 'Inter', sans-serif; 
+      color: white; 
+      font-weight: 700; 
+      text-align: left; 
+      white-space: normal; 
+      display: -webkit-box; 
+      -webkit-line-clamp: 2; 
+      -webkit-box-orient: vertical; 
+      width: 100%; 
+      font-size: clamp(11px, 2.1cqw, 22px); 
+      line-height: 1.15; 
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #news-ticker.fade-out {
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -107,26 +127,46 @@
 
   <script>
     // --- NIEUWS FEED LOGICA ---
+    let nieuwsItems = [];
+    let nieuwsIndex = 0;
+
     async function haalNieuwsOp() {
-        const ticker = document.getElementById('news-ticker');
-        try {
-            const response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://www.nu.nl/rss/Sport");
-            const data = await response.json();
-            
-            if (data.items && data.items.length > 0) {
-                ticker.textContent = data.items[0].title;
-            } else {
-                ticker.textContent = "Geen actueel sportnieuws beschikbaar.";
-            }
-        } catch (e) {
-            ticker.textContent = "Nieuws tijdelijk niet beschikbaar.";
+      try {
+        const response = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://www.nu.nl/rss/Sport");
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          nieuwsItems = data.items;
+          toonVolgendNieuws();
+        } else {
+          document.getElementById('news-ticker').textContent = "Geen actueel sportnieuws beschikbaar.";
         }
+      } catch (e) {
+        document.getElementById('news-ticker').textContent = "Nieuws tijdelijk niet beschikbaar.";
+      }
+    }
+
+    function toonVolgendNieuws() {
+      if (nieuwsItems.length === 0) return;
+      const ticker = document.getElementById('news-ticker');
+      
+      // Fade uit
+      ticker.classList.add('fade-out');
+
+      // Wissel van tekst halverwege de animatie en fade weer in
+      setTimeout(() => {
+        ticker.textContent = nieuwsItems[nieuwsIndex].title;
+        ticker.classList.remove('fade-out');
+        nieuwsIndex = (nieuwsIndex + 1) % nieuwsItems.length;
+      }, 500);
     }
 
     // Initialisaties
     haalNieuwsOp();
-    setInterval(haalNieuwsOp, 60000);  // Elke 1 min nieuws verversen
+    setInterval(haalNieuwsOp, 10 * 60 * 1000); // Elke 10 min RSS verversen
+    setInterval(toonVolgendNieuws, 7000);       // Elke 7 sec headline wisselen
 
+    // --- KLOK EN DATUM ---
     function updateKlokEnDatum() {
       const nu = new Date();
       document.getElementById('live-klok').textContent = `${String(nu.getHours()).padStart(2, '0')}:${String(nu.getMinutes()).padStart(2, '0')}`;
