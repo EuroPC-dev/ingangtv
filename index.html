@@ -21,8 +21,15 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      transition: background-color 0.5s ease;
+      transition: background-color 0.8s ease-in-out;
     }
+
+    /* Zwarte achtergrond wanneer pauzemodus actief is */
+    body.pauze-modus,
+    body.pauze-modus .kiosk-container {
+      background-color: #000000 !important;
+    }
+
     .kiosk-container { 
       container-type: inline-size;
       position: relative; 
@@ -34,8 +41,9 @@
       background-color: #AEC6CF; 
       box-sizing: border-box; 
       overflow: hidden; 
-      transition: background-color 0.5s ease;
+      transition: background-color 0.8s ease-in-out;
     }
+
     .kiosk-video { 
       position: absolute; 
       left: 0; 
@@ -45,6 +53,9 @@
       border-top: 4px solid white; 
       border-bottom: 4px solid white; 
       box-sizing: border-box; 
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
     }
 
     #info-bar { 
@@ -64,7 +75,17 @@
     }
     #video-onder { top: 48%; }
     .live-klok { font-family: 'Garet', sans-serif; font-weight: 850; font-size: clamp(55px, 15cqw, 210px); line-height: 0.82; letter-spacing: -2px; }
-    .live-datum { font-family: 'Inter', sans-serif; font-size: clamp(20px, 4cqw, 60px); line-height: 1.1; font-weight: 900; margin-top: 15px; text-align: center; padding: 0 10px; }
+    .live-datum { 
+      font-family: 'Inter', sans-serif; 
+      font-size: clamp(20px, 4cqw, 60px); 
+      line-height: 1.1; 
+      font-weight: 900; 
+      margin-top: 15px; 
+      text-align: center; 
+      padding: 0 10px; 
+      opacity: 1;
+      transition: opacity 0.4s ease-in-out;
+    }
     
     #news-bar { 
       position: absolute; 
@@ -80,7 +101,17 @@
       box-sizing: border-box; 
       box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); 
       z-index: 10; 
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
     }
+    
+    /* Vervaag-klasse voor elementen die verborgen moeten worden */
+    .fade-hidden {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+
     #news-logo { height: 55%; width: auto; margin-right: 12px; display: block; object-fit: contain; }
     #news-text-container { flex-grow: 1; overflow: hidden; display: flex; align-items: center; justify-content: flex-start; height: 100%; }
     
@@ -166,6 +197,8 @@
     setInterval(toonVolgendNieuws, 7000);
 
     // --- KLOK, PAUZESTAND EN AFTELLER ---
+    let wasPauze = null; // Houdt bij of we al in pauzemodus zaten
+
     function updateKlokEnDatum() {
       const nu = new Date();
       const uur = nu.getHours();
@@ -176,15 +209,13 @@
 
       const videoElement = document.getElementById('video-onder');
       const newsBarElement = document.getElementById('news-bar');
-      const containerElement = document.getElementById('kiosk-container');
+      const datumElement = document.getElementById('live-datum');
 
+      // Schakel de pauzemodus klasse op body in/uit
       if (isPauze) {
-        // --- PAUZESTAND ACTIEF ---
-        document.body.style.backgroundColor = '#000000';
-        containerElement.style.backgroundColor = '#000000';
-
-        videoElement.style.display = 'none';
-        newsBarElement.style.display = 'none';
+        document.body.classList.add('pauze-modus');
+        videoElement.classList.add('fade-hidden');
+        newsBarElement.classList.add('fade-hidden');
 
         // Bereken resterende tijd tot 13:00:00
         const eindPauze = new Date(nu);
@@ -198,25 +229,40 @@
         document.getElementById('live-klok').textContent = 
           `${String(resterendeMinuten).padStart(2, '0')}:${String(resterendeSeconden).padStart(2, '0')}`;
         
-        document.getElementById('live-datum').textContent = "Wij hebben tot 13:00 Lunchpauze.";
+        // Zorg voor een vloeiende tekstwissel wanneer pauze ingaat
+        if (wasPauze !== true) {
+          datumElement.style.opacity = '0';
+          setTimeout(() => {
+            datumElement.textContent = "Wij hebben tot 13:00 Lunchpauze.";
+            datumElement.style.opacity = '1';
+          }, 400);
+        }
       } else {
-        // --- NORMALE STAND ---
-        document.body.style.backgroundColor = '#AEC6CF';
-        containerElement.style.backgroundColor = '#AEC6CF';
-
-        videoElement.style.display = 'block';
-        newsBarElement.style.display = 'flex';
+        document.body.classList.remove('pauze-modus');
+        videoElement.classList.remove('fade-hidden');
+        newsBarElement.classList.remove('fade-hidden');
 
         // Normale klokweergave (HH:MM)
         document.getElementById('live-klok').textContent = 
           `${String(uur).padStart(2, '0')}:${String(minuut).padStart(2, '0')}`;
         
-        // Normale datumweergave
+        // Normale datumweergave instellen (met fade bij terugkeer)
         const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
         const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
-        document.getElementById('live-datum').textContent = 
-          `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]}`;
+        const normaleDatumTekst = `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]}`;
+
+        if (wasPauze !== false) {
+          datumElement.style.opacity = '0';
+          setTimeout(() => {
+            datumElement.textContent = normaleDatumTekst;
+            datumElement.style.opacity = '1';
+          }, 400);
+        } else {
+          datumElement.textContent = normaleDatumTekst;
+        }
       }
+
+      wasPauze = isPauze;
     }
 
     updateKlokEnDatum();
