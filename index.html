@@ -44,6 +44,29 @@
       transition: background-color 0.8s ease-in-out;
     }
 
+    /* Logo bovenaan de klok */
+    #header-logo {
+      position: absolute;
+      top: 5%;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+    }
+
+    #header-logo img {
+      width: 65%;
+      max-width: 450px;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(2px 4px 10px rgba(0, 0, 0, 0.25));
+    }
+
     .kiosk-video { 
       position: absolute; 
       left: 5%; 
@@ -61,7 +84,7 @@
 
     #info-bar { 
       position: absolute; 
-      top: 25%; 
+      top: 23%; 
       height: 21%; 
       left: 0; 
       width: 100%; 
@@ -140,6 +163,10 @@
 <body>
 
   <div class="kiosk-container" id="kiosk-container">
+    <div id="header-logo">
+      <img src="logo.png" alt="EuroPC Logo" />
+    </div>
+
     <div id="info-bar">
       <div class="live-klok" id="live-klok">--:--</div>
       <div class="live-datum" id="live-datum">--- -- ---</div>
@@ -198,39 +225,37 @@
     setInterval(toonVolgendNieuws, 7000);
 
     // --- KLOK, PAUZESTAND EN AFTELLER ---
-    let wasPauze = null; // Houdt bij of we al in pauzemodus zaten
+    let wasPauze = null;
 
     function updateKlokEnDatum() {
       const nu = new Date();
       const uur = nu.getHours();
       const minuut = nu.getMinutes();
 
-      // Controleer of de huidige tijd tussen 12:30 en 13:00 valt
-      const isPauze = (uur === 12 && minuut >= 30);
+      // Controleer of de huidige tijd tussen 13:30 en 14:00 valt
+      const isPauze = (uur === 13 && minuut >= 30);
 
+      const headerLogo = document.getElementById('header-logo');
       const videoElement = document.getElementById('video-onder');
       const newsBarElement = document.getElementById('news-bar');
       const datumElement = document.getElementById('live-datum');
 
-      // Schakel de pauzemodus klasse op body in/uit
       if (isPauze) {
         document.body.classList.add('pauze-modus');
+        headerLogo.classList.add('fade-hidden');
         videoElement.classList.add('fade-hidden');
         newsBarElement.classList.add('fade-hidden');
 
-        // Bereken resterende tijd tot 13:00:00
         const eindPauze = new Date(nu);
-        eindPauze.setHours(13, 0, 0, 0);
+        eindPauze.setHours(14, 0, 0, 0);
         const resterendeMilliSec = eindPauze - nu;
 
         const resterendeMinuten = Math.floor(resterendeMilliSec / 1000 / 60);
         const resterendeSeconden = Math.floor((resterendeMilliSec / 1000) % 60);
 
-        // Afteller weergeven als MM:SS
         document.getElementById('live-klok').textContent = 
           `${String(resterendeMinuten).padStart(2, '0')}:${String(resterendeSeconden).padStart(2, '0')}`;
         
-        // Zorg voor een vloeiende tekstwissel wanneer pauze ingaat
         if (wasPauze !== true) {
           datumElement.style.opacity = '0';
           setTimeout(() => {
@@ -240,14 +265,13 @@
         }
       } else {
         document.body.classList.remove('pauze-modus');
+        headerLogo.classList.remove('fade-hidden');
         videoElement.classList.remove('fade-hidden');
         newsBarElement.classList.remove('fade-hidden');
 
-        // Normale klokweergave (HH:MM)
         document.getElementById('live-klok').textContent = 
           `${String(uur).padStart(2, '0')}:${String(minuut).padStart(2, '0')}`;
         
-        // Normale datumweergave instellen (met fade bij terugkeer)
         const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
         const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
         const normaleDatumTekst = `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]}`;
