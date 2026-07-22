@@ -62,7 +62,7 @@
     }
     #video-onder { top: 48%; }
     .live-klok { font-family: 'Garet', sans-serif; font-weight: 850; font-size: clamp(55px, 15cqw, 210px); line-height: 0.82; letter-spacing: -2px; }
-    .live-datum { font-family: 'Inter', sans-serif; font-size: clamp(20px, 5cqw, 70px); line-height: 1; font-weight: 900; margin-top: 5px; }
+    .live-datum { font-family: 'Inter', sans-serif; font-size: clamp(20px, 4cqw, 60px); line-height: 1.1; font-weight: 900; margin-top: 15px; text-align: center; padding: 0 10px; }
     
     #news-bar { 
       position: absolute; 
@@ -150,10 +150,8 @@
       if (nieuwsItems.length === 0) return;
       const ticker = document.getElementById('news-ticker');
       
-      // Fade uit
       ticker.classList.add('fade-out');
 
-      // Wissel van tekst halverwege de animatie en fade weer in
       setTimeout(() => {
         ticker.textContent = nieuwsItems[nieuwsIndex].title;
         ticker.classList.remove('fade-out');
@@ -161,19 +159,57 @@
       }, 500);
     }
 
-    // Initialisaties
     haalNieuwsOp();
-    setInterval(haalNieuwsOp, 10 * 60 * 1000); // Elke 10 min RSS verversen
-    setInterval(toonVolgendNieuws, 7000);       // Elke 7 sec headline wisselen
+    setInterval(haalNieuwsOp, 10 * 60 * 1000);
+    setInterval(toonVolgendNieuws, 7000);
 
-    // --- KLOK EN DATUM ---
+    // --- KLOK, PAUZESTAND EN AFTELLER ---
     function updateKlokEnDatum() {
       const nu = new Date();
-      document.getElementById('live-klok').textContent = `${String(nu.getHours()).padStart(2, '0')}:${String(nu.getMinutes()).padStart(2, '0')}`;
-      const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
-      const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
-      document.getElementById('live-datum').textContent = `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]}`;
+      const uur = nu.getHours();
+      const minuut = nu.getMinutes();
+
+      // Controleer of de huidige tijd tussen 12:30 en 13:00 valt
+      const isPauze = (uur === 12 && minuut >= 30);
+
+      const videoElement = document.getElementById('video-onder');
+      const newsBarElement = document.getElementById('news-bar');
+
+      if (isPauze) {
+        // --- PAUZESTAND ACTIEF ---
+        videoElement.style.display = 'none';
+        newsBarElement.style.display = 'none';
+
+        // Bereken resterende tijd tot 13:00:00
+        const eindPauze = new Date(nu);
+        eindPauze.setHours(13, 0, 0, 0);
+        const resterendeMilliSec = eindPauze - nu;
+
+        const resterendeMinuten = Math.floor(resterendeMilliSec / 1000 / 60);
+        const resterendeSeconden = Math.floor((resterendeMilliSec / 1000) % 60);
+
+        // Afteller weergeven als MM:SS
+        document.getElementById('live-klok').textContent = 
+          `${String(resterendeMinuten).padStart(2, '0')}:${String(resterendeSeconden).padStart(2, '0')}`;
+        
+        document.getElementById('live-datum').textContent = "Wij hebben tot 13:00 Lunchpauze.";
+      } else {
+        // --- NORMALE STAND ---
+        videoElement.style.display = 'block';
+        newsBarElement.style.display = 'flex';
+
+        // Normale klokweergave (HH:MM)
+        document.getElementById('live-klok').textContent = 
+          `${String(uur).padStart(2, '0')}:${String(minuut).padStart(2, '0')}`;
+        
+        // Normale datumweergave
+        const dagen = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+        const maanden = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+        document.getElementById('live-datum').textContent = 
+          `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]}`;
+      }
     }
+
     updateKlokEnDatum();
     setInterval(updateKlokEnDatum, 1000);
 
