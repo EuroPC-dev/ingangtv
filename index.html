@@ -21,6 +21,7 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
+      transition: background-color 0.5s ease;
     }
     .kiosk-container { 
       container-type: inline-size;
@@ -33,6 +34,7 @@
       background-color: #AEC6CF; 
       box-sizing: border-box; 
       overflow: hidden; 
+      transition: background-color 0.5s ease;
     }
     .kiosk-video { 
       position: absolute; 
@@ -105,7 +107,7 @@
 </head>
 <body>
 
-  <div class="kiosk-container">
+  <div class="kiosk-container" id="kiosk-container">
     <div id="info-bar">
       <div class="live-klok" id="live-klok">--:--</div>
       <div class="live-datum" id="live-datum">--- -- ---</div>
@@ -170,19 +172,23 @@
       const minuut = nu.getMinutes();
 
       // Controleer of de huidige tijd tussen 12:30 en 13:00 valt
-      const isPauze = (uur === 12 && minuut >= 30);
+      const isPauze = (uur === 13 && minuut >= 30);
 
       const videoElement = document.getElementById('video-onder');
       const newsBarElement = document.getElementById('news-bar');
+      const containerElement = document.getElementById('kiosk-container');
 
       if (isPauze) {
         // --- PAUZESTAND ACTIEF ---
+        document.body.style.backgroundColor = '#000000';
+        containerElement.style.backgroundColor = '#000000';
+
         videoElement.style.display = 'none';
         newsBarElement.style.display = 'none';
 
         // Bereken resterende tijd tot 13:00:00
         const eindPauze = new Date(nu);
-        eindPauze.setHours(13, 0, 0, 0);
+        eindPauze.setHours(14, 0, 0, 0);
         const resterendeMilliSec = eindPauze - nu;
 
         const resterendeMinuten = Math.floor(resterendeMilliSec / 1000 / 60);
@@ -195,6 +201,9 @@
         document.getElementById('live-datum').textContent = "Wij hebben tot 13:00 Lunchpauze.";
       } else {
         // --- NORMALE STAND ---
+        document.body.style.backgroundColor = '#AEC6CF';
+        containerElement.style.backgroundColor = '#AEC6CF';
+
         videoElement.style.display = 'block';
         newsBarElement.style.display = 'flex';
 
